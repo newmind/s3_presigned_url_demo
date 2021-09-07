@@ -1,4 +1,6 @@
 var AWS = require("aws-sdk");
+var mime = require("mime-types");
+
 var credentials = {
   accessKeyId: process.env.S3_ACCESS_KEY,
   secretAccessKey: process.env.S3_SECRET_KEY,
@@ -28,8 +30,10 @@ const params = {
     { "x-amz-algorithm": "AWS4-HMAC-SHA256" },
   ],
 };
+
 exports.generatePresignedURL = function (req, res) {
   params.Fields.key = req.query.filename || "filename";
+  params.Fields["Content-Type"] = mime.lookup(params.Fields.key);
   s3.createPresignedPost(params, function (err, data) {
     if (err) {
       console.log("Error", err);
