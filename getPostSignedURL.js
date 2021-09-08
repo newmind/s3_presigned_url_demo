@@ -1,5 +1,6 @@
 var AWS = require("aws-sdk");
 var mime = require("mime-types");
+var { nanoid } = require("nanoid");
 
 var credentials = {
   accessKeyId: process.env.S3_ACCESS_KEY,
@@ -32,7 +33,9 @@ const params = {
 };
 
 exports.generatePresignedURL = function (req, res) {
-  params.Fields.key = req.query.filename || "filename";
+  params.Fields.key =
+    "uploads/" + nanoid() + "_" + req.query.filename || "filename";
+  console.log(params.Fields.key);
   params.Fields["Content-Type"] = mime.lookup(params.Fields.key);
   s3.createPresignedPost(params, function (err, data) {
     if (err) {

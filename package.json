@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
+    "start": "npx nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -12,7 +13,8 @@
     "cors": "2.8.4",
     "dotenv": "5.0.0",
     "express": "4.16.2",
-    "mime-types": "^2.1.32"
+    "mime-types": "^2.1.32",
+    "nanoid": "^3.1.25"
   },
   "devDependencies": {},
   "description": ""
