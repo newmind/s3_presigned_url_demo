@@ -1,5 +1,8 @@
 // Requires jQuery and blueimp's jQuery.fileUpload
-var credentialsUrl = "/geturl";
+
+var credentialsHost = "";
+credentialsHost = "http://api-dev.kemi.love";
+var credentialsUrl = credentialsHost + "/geturl";
 
 window.initS3FileUpload = function ($fileInput) {
   $fileInput.fileupload({
@@ -23,7 +26,7 @@ function s3add(e, data) {
     dataType: "json",
     data: {
       filename: filename,
-      content_type: contentType,
+      // content_type: contentType,
     },
     success: function (s3Data) {
       var fileUri = s3Data.url + "/" + s3Data.fields.key;

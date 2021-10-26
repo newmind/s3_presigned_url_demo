@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>카카오 로그인</title>
+  </head>
+  <body>
+    <div id="token-result"></div>
+    <ul>
+      <li onclick="loginWithKakaoPopUp();">
+        <a href="javascript:void(0)">
+          <span>카카오 로그인(팝업)</span>
+        </a>
+      </li>
+      <li onclick="kakaoAuthorize();">
+        <a href="javascript:void(0)">
+          <span>카카오 로그인(라다이렉트)</span>
+        </a>
+      </li>
+      <li onclick="logoutWithKakao();">
+        <a href="javascript:void(0)">
+          <span>카카오 로그아웃</span>
+        </a>
+      </li>
+      <li onclick="kakaoUnlink();">
+        <a href="javascript:void(0)">
+          <span>카카오 언링크</span>
+        </a>
+      </li>
+
+      <br />
+      <li onclick="profileWithKakao();">
+        <a href="javascript:void(0)">
+          <span>카카오 프로파일</span>
+        </a>
+      </li>
+    </ul>
+  </body>
+  <!-- 카카오 스크립트 -->
+  <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+  <script>
+    const CLIENT_ID = "c8d33bf4313176a36bbdd523ec16d9cf";
+
+    //kakao.authorize 의 redirect 를 통해 code 와 함꼐 호출된거면
+    const queryString = window.location.search;
+    console.log("queryString = ", queryString);
+    if (queryString) {
+      const urlParams = new URLSearchParams(queryString);
+      // alert(urlParams.get("code"));
+      console.log(urlParams.get("code"));
+
+      // KAKAO REST API 를 통해, code 로 token 을  얻어와야 함
+      // https://developers.kakao.com/docs/latest/ko/kakaologin/rest-api#request-token
+
+      /*
+            curl -v -X POST "https://kauth.kakao.com/oauth/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "grant_type=authorization_code" \
+            -d "client_id=c8d33bf4313176a36bbdd523ec16d9cf" \
+            --data-urlencode "redirect_uri=http://localhost:5000/kakao.html" \
+            -d "code=j2Lyb0gzycrvZDNVbHy4-_uQhUtiloreQh6aS1LoVdahPYOd9YH5-x9E7I5HuUkc_3hRNAopdSkAAAF77WYekg"
+        */
+      const formData = new FormData();
+      formData.append("grant_type", "authorization_code");
+      formData.append("client_id", CLIENT_ID);
+      formData.append("redirect_uri", encodeURI("http://localhost:5000/kakao.html"));
+      formData.append("code", urlParams.get("code"));
+
+      fetch("https://kauth.kakao.com/oauth/token", {
+        body: formData,
+        method: "post",
+      })
+        .then((res) => res.json())
+        .then((body) => console.log(body))
+        .catch((err) => console.error("err = ", err));
+
+      // token 을 얻은 후, sdk 에 세팅해줘야 함
+      // Kakao.Auth.setAccessToken(token);
+    }
+
+    // http://test-tam.pe.kr/kakao.php
+
+    //발급받은 키 중 javascript키를 사용해준다.
+    Kakao.init(CLIENT_ID);
+    // sdk초기화여부판단
+    console.log(Kakao.isInitialized()); // sdk초기화여부판단
+
+    //카카오로그인
+    function loginWithKakaoPopUp() {
+      Kakao.Auth.login({
+        success: function (response) {
+          alert(JSON.stringify(response));
+          console.log(response.access_token);
+          Kakao.API.request({
+            url: "/v2/user/me",
+            success: function (response) {
+              console.log(response);
+            },
+            fail: function (error) {
+              console.log(error);
+            },
+          });
+        },
+        fail: function (error) {
+          console.log(error);
+        },
+      });
+    }
+
+    function kakaoAuthorize() {
+      Kakao.Auth.authorize({
+        redirectUri: encodeURI("http://localhost:5000/kakao.html"), //★ 수정 할 것
+      });
+    }
+
+    //카카오로그아웃
+    function logoutWithKakao() {
+      if (!Kakao.Auth.getAccessToken()) {
+        console.log("Not logged in.");
+        alert("Not logged in.");
+        return;
+      }
+      console.log(Kakao.Auth.getAccessToken()); //before Logout
+      Kakao.Auth.logout(function () {
+        console.log(Kakao.Auth.getAccessToken()); //after Logout
+        alert("LogOut Success");
+        //★ 추가 할 것 : 로그아웃 성공 후 처리
+      });
+    }
+    // JavaScript 연결 끊기
+    function kakaoUnlink() {
+      if (!Kakao.Auth.getAccessToken()) {
+        console.log("Not logged in.");
+        alert("Not logged in.");
+        return;
+      }
+      if (Kakao.Auth.getAccessToken()) {
+        Kakao.API.request({
+          url: "/v1/user/unlink",
+          success: function (response) {
+            console.log(response);
+          },
+          fail: function (error) {
+            console.log(error);
+          },
+        });
+        Kakao.Auth.setAccessToken(undefined);
+      }
+    }
+
+    // token 으로 유저 정보 얻어오기\
+    function profileWithKakao() {
+      if (!Kakao.Auth.getAccessToken()) {
+        console.log("Not logged in.");
+        alert("Not logged in.");
+        return;
+      }
+      Kakao.API.request({
+        url: "/v2/user/me",
+        success: function (response) {
+          console.log("Kakao.API res = ", response);
+          //   document.getElementById("userid").innerText = response.id;
+          //   document.getElementById("nickname").innerText =
+          //     response.kakao_account.profile.nickname;
+          //   document.getElementById("profile_image").src =
+          //     response.properties.profile_image;
+          //   document.getElementById("thumbnail_image").src =
+          //     response.properties.thumbnail_image;
+        },
+        fail: function (error) {
+          console.log(error);
+        },
+      });
+
+      //
+      // const token = Kakao.Auth.getAccessToken();
+      // const url = `kakao_profile?token=${token}`;
+      // const option = {
+      //   header: {
+      //     Authorization: "bearer " + token,
+      //   },
+      // };
+      // fetch(url, option)
+      // .then((res) => res.json())
+      // .then(body => {
+      //   console.log(body);
+      // });
+    }
+  </script>
+</html>
