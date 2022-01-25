@@ -1,0 +1,7 @@
+
+activate Front
+Front -> 아임포트: 1. 결제 요청 (amount)
+아임포트 -> 벡엔드: 2. confirm_url 
+아임포트 -> 벡엔드: 3. webhook (confirm_url에서  200 응답왔을때)
+아임포트 --> Front: 4. 결제 응답(성공/실패)
+deactivate Front
