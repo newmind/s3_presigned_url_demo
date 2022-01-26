@@ -2,6 +2,7 @@
 
 var credentialsHost = "";
 credentialsHost = "http://api-dev.kemi.love";
+// credentialsHost = "http://localhost:5000";
 var credentialsUrl = credentialsHost + "/geturl";
 
 window.initS3FileUpload = function ($fileInput) {

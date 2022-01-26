@@ -33,8 +33,10 @@ const params = {
 };
 
 exports.generatePresignedURL = function (req, res) {
+  const now = new Date().toISOString();
+
   params.Fields.key =
-    "uploads/" + nanoid() + "_" + req.query.filename || "filename";
+    "uploads/" + now.substring(0, 10) + '/' + nanoid() + "_" + req.query.filename || "filename";
   console.log(params.Fields.key);
   params.Fields["Content-Type"] = mime.lookup(params.Fields.key);
   s3.createPresignedPost(params, function (err, data) {

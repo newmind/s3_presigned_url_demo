@@ -16,7 +16,8 @@ app.set("port", process.env.PORT || 5000);
 app.use(express.static(__dirname + "/public"));
 
 app.get("/geturl", function (req, res) {
-  // getURL.generatePresignedURL(req, res)
+  const getURL = require('./getPostSignedURL');
+  getURL.generatePresignedURL(req, res)
 });
 
 app.get("/callback", async (req, res) => {
